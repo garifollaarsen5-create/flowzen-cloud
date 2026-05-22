@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f5f7f4">
+<title>Flowzen Cloud — умный WhatsApp-менеджер для вашего бизнеса</title>
+<meta name="description" content="Flowzen Cloud — AI-менеджер для WhatsApp. Отвечает клиентам как живой человек, принимает заказы и работает 24/7.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap&subset=cyrillic,cyrillic-ext,latin" rel="stylesheet">
+<style>
+/* ============ RESET ============ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{overflow-x:hidden;width:100%}
+html{-webkit-text-size-adjust:100%}
+img,svg{display:block;max-width:100%}
+a{text-decoration:none;color:inherit;-webkit-tap-highlight-color:transparent}
+button{font:inherit;cursor:pointer;border:0;background:none}
+
+/* ============ TOKENS ============ */
+:root{
+  --page:#f4f7f3;
+  --paper:#ffffff;
+  --ink:#0c1c12;
+  --ink-soft:#4a5b4f;
+  --mint:#e8f5ec;
+  --mint-deep:#d3ecda;
+  --green:#12a150;
+  --green-d:#0c7c3c;
+  --wa:#25d366;
+  --wa-head:#008069;
+  --line:rgba(12,28,18,.10);
+  --shadow-s:0 2px 10px rgba(12,28,18,.06);
+  --shadow-m:0 18px 44px -18px rgba(12,40,22,.30);
+  --shadow-l:0 40px 80px -30px rgba(8,50,26,.45);
+  --r:22px;
+  --maxw:1080px;
+  --serif:'Unbounded',system-ui,sans-serif;
+  --sans:'Manrope',system-ui,sans-serif;
+}
+
+body{
+  font-family:var(--sans);
+  background:var(--page);
+  color:var(--ink);
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  font-size:16px;
+  letter-spacing:-.01em;
+}
+
+/* ambient background */
+body::before{
+  content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:
+    radial-gradient(60vw 50vw at 88% -6%, rgba(37,211,102,.20), transparent 70%),
+    radial-gradient(55vw 50vw at -8% 102%, rgba(18,161,80,.16), transparent 70%);
+}
+body::after{
+  content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;opacity:.5;
+  background-image:radial-gradient(rgba(12,28,18,.18) .8px,transparent .8px);
+  background-size:30px 30px;
+  -webkit-mask-image:linear-gradient(180deg,#000,transparent 60%);
+          mask-image:linear-gradient(180deg,#000,transparent 60%);
+}
+
+/* ============ LAYOUT ============ */
+.wrap{width:100%;max-width:var(--maxw);margin-inline:auto;padding-inline:20px}
+section{position:relative}
+.block{padding-block:clamp(56px,11vw,108px)}
+
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--sans);font-weight:700;font-size:12.5px;
+  letter-spacing:.14em;text-transform:uppercase;
+  color:var(--green-d);
+  background:var(--mint);
+  border:1px solid var(--mint-deep);
+  padding:7px 14px;border-radius:100px;
+}
+.eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--wa);box-shadow:0 0 0 4px rgba(37,211,102,.22)}
+
+h1,h2,h3{font-family:var(--serif);font-weight:700;line-height:1.08;letter-spacing:-.02em}
+h2{font-size:clamp(27px,6.4vw,46px)}
+.lead{color:var(--ink-soft);font-size:clamp(15.5px,3.7vw,18px);font-weight:500}
+
+.sec-head{max-width:620px;margin-bottom:clamp(30px,6vw,52px)}
+.sec-head h2{margin:16px 0 12px}
+
+/* ============ BUTTONS ============ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  font-family:var(--sans);font-weight:700;font-size:15.5px;letter-spacing:-.01em;
+  padding:15px 24px;border-radius:100px;
+  transition:transform .22s cubic-bezier(.34,1.4,.5,1),box-shadow .22s,filter .22s;
+  will-change:transform;
+}
+.btn svg{width:20px;height:20px;flex:none}
+.btn-wa{
+  color:#fff;
+  background:linear-gradient(135deg,#2cdd6e,#12a150);
+  box-shadow:0 14px 30px -10px rgba(18,161,80,.65),inset 0 1px 0 rgba(255,255,255,.35);
+}
+.btn-wa:active{transform:scale(.96)}
+.btn-ghost{
+  color:var(--ink);background:var(--paper);
+  border:1px solid var(--line);box-shadow:var(--shadow-s);
+}
+.btn-ghost:active{transform:scale(.96)}
+@media(hover:hover){
+  .btn-wa:hover{transform:translateY(-3px);filter:brightness(1.04)}
+  .btn-ghost:hover{transform:translateY(-3px);box-shadow:var(--shadow-m)}
+}
+
+/* ============ NAV ============ */
+.nav{
+  position:sticky;top:0;z-index:50;
+  transition:background .3s,box-shadow .3s,border-color .3s;
+  border-bottom:1px solid transparent;
+}
+.nav.scrolled{
+  background:rgba(244,247,243,.82);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  border-bottom-color:var(--line);
+}
+.nav-in{display:flex;align-items:center;justify-content:space-between;padding-block:13px}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-weight:700;font-size:clamp(15px,4.2vw,18px);letter-spacing:-.02em;white-space:nowrap}
+.logo-mark{
+  width:34px;height:34px;border-radius:10px;flex:none;
+  background:linear-gradient(140deg,#2cdd6e,#0c7c3c);
+  display:grid;place-items:center;
+  box-shadow:0 6px 16px -6px rgba(18,161,80,.7),inset 0 1px 0 rgba(255,255,255,.4);
+}
+.logo-mark svg{width:19px;height:19px}
+.nav-in{gap:12px}
+.nav .btn{padding:10px 18px;font-size:14px;flex:none}
+.nav .btn svg{width:17px;height:17px}
+@media(max-width:479px){
+  .nav-btn-tx{display:none}
+  .nav .btn{padding:11px}
+  .nav .btn svg{width:19px;height:19px}
+}
+
+/* ============ HERO ============ */
+.hero{padding-top:clamp(26px,7vw,60px);padding-bottom:clamp(46px,9vw,86px)}
+.hero h1{
+  font-size:clamp(33px,8.6vw,62px);
+  margin:18px 0 18px;
+}
+.hero h1 .hl{
+  color:var(--green-d);
+  background:linear-gradient(180deg,transparent 62%,rgba(37,211,102,.32) 62%);
+}
+.hero .lead{max-width:540px}
+.hero-cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.hero-cta .btn{flex:1 1 auto}
+
+.trust{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:30px;
+  padding-top:24px;border-top:1px solid var(--line);
+}
+.trust div{display:flex;flex-direction:column}
+.trust b{font-family:var(--serif);font-size:clamp(18px,5vw,22px);color:var(--ink)}
+.trust span{font-size:12px;color:var(--ink-soft);font-weight:600;line-height:1.3}
+
+/* ============ PHONE ============ */
+.phone-stage{display:flex;justify-content:center;margin-top:clamp(40px,9vw,30px);perspective:1400px}
+.phone{
+  position:relative;
+  width:clamp(266px,80vw,320px);
+  aspect-ratio:312/640;
+  background:linear-gradient(160deg,#1d2b22,#0a120d);
+  border-radius:42px;
+  padding:11px;
+  box-shadow:
+    var(--shadow-l),
+    0 0 0 2px rgba(12,28,18,.85),
+    inset 0 2px 3px rgba(255,255,255,.12);
+}
+.phone::before{ /* dynamic island */
+  content:"";position:absolute;top:18px;left:50%;transform:translateX(-50%);
+  width:78px;height:21px;background:#05090a;border-radius:14px;z-index:6;
+}
+.screen{
+  position:relative;width:100%;height:100%;
+  background:#e9e1d8;border-radius:32px;overflow:hidden;
+  display:flex;flex-direction:column;
+}
+/* wa header */
+.wa-head{
+  background:var(--wa-head);color:#fff;
+  display:flex;align-items:center;gap:9px;
+  padding:34px 12px 11px;flex:none;
+}
+.wa-back{font-size:19px;line-height:1;opacity:.9}
+.wa-av{
+  width:33px;height:33px;border-radius:50%;flex:none;
+  background:linear-gradient(140deg,#3ee87c,#0c7c3c);
+  display:grid;place-items:center;
+}
+.wa-av svg{width:17px;height:17px}
+.wa-meta{display:flex;flex-direction:column;min-width:0;flex:1}
+.wa-meta b{font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wa-meta span{font-size:10.5px;opacity:.85;display:flex;align-items:center;gap:4px}
+.wa-meta span::before{content:"";width:6px;height:6px;border-radius:50%;background:#7ff0a3}
+.wa-icons{display:flex;gap:13px;opacity:.92;font-size:14px}
+
+/* chat body */
+.wa-body{
+  flex:1;min-height:0;overflow:hidden;padding:13px 11px 8px;
+  display:flex;flex-direction:column;gap:8px;
+  background:#e7ddd2;
+  background-image:
+    radial-gradient(rgba(12,28,18,.045) 1px,transparent 1px);
+  background-size:18px 18px;
+}
+.wa-day{
+  align-self:center;background:rgba(255,255,255,.78);
+  color:#5b6b5e;font-size:9.5px;font-weight:700;
+  padding:3px 10px;border-radius:8px;margin-bottom:2px;
+}
+.msg{
+  max-width:80%;font-size:12.3px;line-height:1.42;
+  padding:7px 10px 16px;border-radius:13px;position:relative;
+  box-shadow:0 1px 1px rgba(12,28,18,.13);
+  word-wrap:break-word;
+}
+.msg.bot{background:#fff;align-self:flex-start;border-top-left-radius:4px}
+.msg.me{background:#d6fcc9;align-self:flex-end;border-top-right-radius:4px}
+.msg .t{
+  position:absolute;right:9px;bottom:4px;
+  font-size:8.5px;color:#7a8a7d;display:flex;align-items:center;gap:3px;
+}
+.msg.me .t{color:#5aa07a}
+.tick{color:#34b7f1;font-size:9px;letter-spacing:-2px}
+.cat-card{
+  display:flex;align-items:center;gap:8px;margin-top:5px;
+  background:#f0f3ef;border-radius:9px;padding:7px 9px;
+}
+.cat-ic{width:26px;height:26px;border-radius:7px;background:var(--green);display:grid;place-items:center;flex:none}
+.cat-ic svg{width:14px;height:14px}
+.cat-card b{font-size:11px;display:block}
+.cat-card span{font-size:9px;color:#7a8a7d;font-weight:600}
+
+/* typing */
+.typing{
+  align-self:flex-start;background:#fff;border-radius:13px;border-top-left-radius:4px;
+  padding:10px 12px;display:flex;gap:4px;box-shadow:0 1px 1px rgba(12,28,18,.13);
+}
+.typing i{width:6px;height:6px;border-radius:50%;background:#9aa89d;animation:bb 1.3s infinite ease-in-out}
+.typing i:nth-child(2){animation-delay:.18s}
+.typing i:nth-child(3){animation-delay:.36s}
+@keyframes bb{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-5px);opacity:1}}
+
+/* input */
+.wa-input{
+  flex:none;background:#e7ddd2;padding:7px 10px 11px;
+  display:flex;align-items:center;gap:7px;
+}
+.wa-field{
+  flex:1;background:#fff;border-radius:100px;
+  padding:8px 13px;font-size:11px;color:#9aa89d;
+  display:flex;align-items:center;gap:6px;
+}
+.wa-send{
+  width:33px;height:33px;border-radius:50%;flex:none;
+  background:var(--wa-head);display:grid;place-items:center;
+}
+.wa-send svg{width:15px;height:15px}
+
+/* chat reveal */
+.js .msg,.js .typing{opacity:0;transform:translateY(9px) scale(.96)}
+.msg.show,.typing.show{
+  animation:pop .42s cubic-bezier(.2,.9,.3,1.3) forwards;
+}
+@keyframes pop{to{opacity:1;transform:translateY(0) scale(1)}}
+
+/* ============ PROBLEM ============ */
+.prob-grid{display:grid;gap:13px}
+.prob-card{
+  background:var(--paper);border:1px solid var(--line);
+  border-radius:var(--r);padding:20px 20px;
+  box-shadow:var(--shadow-s);
+  display:flex;gap:14px;align-items:flex-start;
+}
+.prob-emo{
+  width:42px;height:42px;border-radius:12px;flex:none;
+  background:#fdeceb;display:grid;place-items:center;font-size:20px;
+}
+.prob-card p{font-weight:600;font-size:15px}
+.prob-note{
+  margin-top:16px;background:linear-gradient(135deg,#0c7c3c,#12a150);
+  color:#fff;border-radius:var(--r);padding:22px 22px;
+  font-weight:600;font-size:16px;
+  display:flex;gap:13px;align-items:center;
+  box-shadow:var(--shadow-m);
+}
+.prob-note .pn-ic{
+  width:40px;height:40px;border-radius:11px;flex:none;
+  background:rgba(255,255,255,.18);display:grid;place-items:center;
+}
+.prob-note .pn-ic svg{width:21px;height:21px}
+
+/* ============ FEATURES (what bot does) ============ */
+.feat-list{display:flex;flex-direction:column;gap:10px}
+.feat{
+  display:flex;align-items:center;gap:15px;
+  background:var(--paper);border:1px solid var(--line);
+  border-radius:18px;padding:16px 17px;box-shadow:var(--shadow-s);
+  transition:transform .25s,box-shadow .25s,border-color .25s;
+}
+@media(hover:hover){.feat:hover{transform:translateX(6px);box-shadow:var(--shadow-m);border-color:var(--mint-deep)}}
+.feat-ic{
+  width:46px;height:46px;border-radius:13px;flex:none;
+  background:var(--mint);color:var(--green-d);
+  display:grid;place-items:center;
+  border:1px solid var(--mint-deep);
+}
+.feat-ic svg{width:23px;height:23px}
+.feat-tx{flex:1;min-width:0}
+.feat-tx b{display:block;font-family:var(--serif);font-size:15px;font-weight:600;line-height:1.2}
+.feat-tx span{font-size:13px;color:var(--ink-soft);font-weight:500;line-height:1.4}
+.feat-no{flex:none;align-self:flex-start;font-family:var(--serif);font-size:13px;color:var(--mint-deep);font-weight:700}
+
+/* ============ BENEFITS ============ */
+.ben-grid{display:grid;gap:13px}
+.ben{
+  background:var(--paper);border:1px solid var(--line);
+  border-radius:var(--r);padding:22px 20px;box-shadow:var(--shadow-s);
+  position:relative;overflow:hidden;
+}
+.ben::after{
+  content:"";position:absolute;right:-30px;top:-30px;
+  width:110px;height:110px;border-radius:50%;
+  background:radial-gradient(circle,rgba(37,211,102,.16),transparent 70%);
+}
+.ben-ic{
+  width:48px;height:48px;border-radius:14px;
+  background:linear-gradient(140deg,#2cdd6e,#0c7c3c);
+  display:grid;place-items:center;margin-bottom:14px;
+  box-shadow:0 10px 20px -10px rgba(18,161,80,.7);
+}
+.ben-ic svg{width:24px;height:24px;color:#fff}
+.ben h3{font-size:17px;margin-bottom:6px}
+.ben p{font-size:13.8px;color:var(--ink-soft);font-weight:500}
+
+/* ============ STEPS ============ */
+.steps-wrap{
+  background:var(--ink);color:#fff;border-radius:clamp(24px,6vw,38px);
+  padding:clamp(30px,7vw,56px) clamp(22px,5vw,46px);
+  position:relative;overflow:hidden;
+  box-shadow:var(--shadow-l);
+}
+.steps-wrap::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(40vw 30vw at 90% 0%,rgba(37,211,102,.28),transparent 70%);
+}
+.steps-wrap .eyebrow{background:rgba(37,211,102,.14);border-color:rgba(37,211,102,.3);color:#7ff0a3}
+.steps-wrap h2{color:#fff;margin:15px 0 6px}
+.steps-wrap .lead{color:rgba(255,255,255,.66)}
+.steps{display:flex;flex-direction:column;gap:14px;margin-top:30px}
+.step{
+  display:flex;gap:16px;align-items:flex-start;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:18px;padding:18px 18px;
+}
+.step-no{
+  font-family:var(--serif);font-weight:700;font-size:17px;
+  width:42px;height:42px;border-radius:12px;flex:none;
+  background:linear-gradient(140deg,#2cdd6e,#0c7c3c);
+  color:#06140b;display:grid;place-items:center;
+}
+.step b{display:block;font-family:var(--serif);font-size:16px;margin-bottom:4px}
+.step p{font-size:13.8px;color:rgba(255,255,255,.66);font-weight:500}
+
+/* ============ TRAIN ============ */
+.train{
+  background:var(--paper);border:1px solid var(--line);
+  border-radius:clamp(24px,6vw,34px);
+  padding:clamp(30px,7vw,52px) clamp(22px,5vw,44px);
+  box-shadow:var(--shadow-m);
+}
+.train h2{margin:15px 0 14px}
+.chips{display:flex;flex-wrap:wrap;gap:9px;margin-top:22px}
+.chip{
+  display:flex;align-items:center;gap:7px;
+  background:var(--mint);border:1px solid var(--mint-deep);
+  color:var(--green-d);font-weight:700;font-size:13px;
+  padding:9px 14px;border-radius:100px;
+}
+.chip svg{width:15px;height:15px}
+
+/* ============ FINAL CTA ============ */
+.final{
+  text-align:center;
+  background:linear-gradient(150deg,#0c7c3c,#12a150 55%,#2cdd6e);
+  color:#fff;border-radius:clamp(26px,6vw,40px);
+  padding:clamp(40px,9vw,76px) clamp(22px,5vw,40px);
+  position:relative;overflow:hidden;
+  box-shadow:var(--shadow-l);
+}
+.final::before{
+  content:"";position:absolute;inset:0;opacity:.5;
+  background:radial-gradient(rgba(255,255,255,.14) 1px,transparent 1px);
+  background-size:26px 26px;
+  -webkit-mask-image:radial-gradient(70% 70% at 50% 30%,#000,transparent);
+          mask-image:radial-gradient(70% 70% at 50% 30%,#000,transparent);
+}
+.final>*{position:relative}
+.final h2{color:#fff;font-size:clamp(26px,6.7vw,44px);margin-bottom:14px}
+.final p{color:rgba(255,255,255,.86);font-weight:500;max-width:440px;margin:0 auto 28px;font-size:clamp(15px,3.7vw,17px)}
+.final .btn-wa{
+  background:#fff;color:var(--green-d);font-size:16.5px;padding:17px 30px;
+  box-shadow:0 20px 40px -14px rgba(0,0,0,.45);
+}
+.final .btn-wa svg{color:var(--green)}
+.final .micro{margin-top:16px;font-size:12.5px;color:rgba(255,255,255,.72);font-weight:600}
+
+/* ============ FOOTER ============ */
+.foot{padding-block:30px 96px;text-align:center}
+.foot .logo{justify-content:center;margin-bottom:8px}
+.foot p{font-size:12.5px;color:var(--ink-soft);font-weight:500;max-width:300px;margin-inline:auto}
+
+/* ============ FAB ============ */
+.fab{
+  position:fixed;right:16px;bottom:16px;z-index:60;
+  width:56px;height:56px;border-radius:50%;
+  background:linear-gradient(135deg,#2cdd6e,#12a150);
+  display:grid;place-items:center;
+  box-shadow:0 14px 30px -8px rgba(18,161,80,.7),inset 0 1px 0 rgba(255,255,255,.4);
+  transform:translateY(120px);opacity:0;
+  transition:transform .4s cubic-bezier(.34,1.4,.5,1),opacity .4s;
+}
+.fab.on{transform:translateY(0);opacity:1}
+.fab svg{width:28px;height:28px;color:#fff}
+.fab::after{
+  content:"";position:absolute;inset:0;border-radius:50%;
+  border:2px solid rgba(37,211,102,.5);
+  animation:ring 2.4s infinite;
+}
+@keyframes ring{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.7);opacity:0}}
+@media(hover:hover){.fab:active,.fab:hover{transform:translateY(-3px)}}
+
+/* ============ REVEAL ============ */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.8,.25,1)}
+.reveal.in{opacity:1;transform:none}
+.stagger>*{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.8,.25,1)}
+.stagger.in>*{opacity:1;transform:none}
+.stagger.in>*{transition-delay:calc(var(--i,0)*85ms)}
+
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.001s!important;transition-duration:.001s!important}
+  .reveal,.stagger>*{opacity:1;transform:none}
+  .js .msg,.js .typing{opacity:1;transform:none}
+  .fab{transform:none;opacity:1}
+}
+
+/* ============ DESKTOP ============ */
+@media(min-width:760px){
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
+  .phone-stage{margin-top:0}
+  .hero-cta .btn{flex:0 0 auto}
+  .prob-grid{grid-template-columns:1fr 1fr}
+  .ben-grid{grid-template-columns:1fr 1fr 1fr}
+  .ben:first-child{grid-column:span 2}
+  .train-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:36px;align-items:center}
+  .steps{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= NAV ================= -->
+<nav class="nav" id="nav">
+  <div class="wrap nav-in">
+    <div class="logo">
+      <span class="logo-mark">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 12c0-4.97 4.03-9 9-9 4.97 0 9 4.03 9 9 0 4.97-4.03 9-9 9-1.6 0-3.1-.42-4.4-1.15L3 21l1.2-4.5A8.9 8.9 0 0 1 3 12Z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M8.5 12.5l2.3 2.3 4.7-5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      Flowzen Cloud
+    </div>
+    <a class="btn btn-wa wa-link" href="https://wa.me/77753564962">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.05 4.91A9.82 9.82 0 0 0 12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.86 9.86 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.91-7.02ZM12.05 20.1a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.37c0-4.54 3.7-8.23 8.24-8.23a8.2 8.2 0 0 1 8.23 8.24c0 4.54-3.69 8.22-8.23 8.22Zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.51.11-.11.25-.29.37-.43.13-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.42l-.48-.01a.92.92 0 0 0-.66.31c-.23.25-.87.85-.87 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.1-.22-.16-.47-.28Z"/></svg>
+      <span class="nav-btn-tx">Подключить</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ================= HERO ================= -->
+<header class="hero block wrap">
+  <div class="hero-grid">
+    <div class="hero-tx reveal">
+      <span class="eyebrow"><span class="dot"></span>Smart WhatsApp-менеджер</span>
+      <h1>AI-менеджер, который <span class="hl">продаёт в WhatsApp</span> за вас</h1>
+      <p class="lead">Flowzen Cloud — умный помощник для вашего бизнеса. Он общается с клиентами как настоящий менеджер: отвечает на вопросы, показывает каталог и принимает заказы. Без выходных и перерывов.</p>
+      <div class="hero-cta">
+        <a class="btn btn-wa wa-link" href="https://wa.me/77753564962">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.05 4.91A9.82 9.82 0 0 0 12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.86 9.86 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.91-7.02ZM12.05 20.1a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.37c0-4.54 3.7-8.23 8.24-8.23a8.2 8.2 0 0 1 8.23 8.24c0 4.54-3.69 8.22-8.23 8.22Zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.51.11-.11.25-.29.37-.43.13-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.42l-.48-.01a.92.92 0 0 0-.66.31c-.23.25-.87.85-.87 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.1-.22-.16-.47-.28Z"/></svg>
+          Написать в WhatsApp
+        </a>
+        <a class="btn btn-ghost" href="#how">Как это работает</a>
+      </div>
+      <div class="trust">
+        <div><b>24/7</b><span>На связи всегда</span></div>
+        <div><b>~3 сек</b><span>Скорость ответа</span></div>
+        <div><b>0</b><span>Пропущенных сообщений</span></div>
+      </div>
+    </div>
+
+    <!-- PHONE -->
+    <div class="phone-stage reveal">
+      <div class="phone">
+        <div class="screen">
+          <div class="wa-head">
+            <span class="wa-back">‹</span>
+            <span class="wa-av">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M8.5 12.5l2.3 2.3 4.7-5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span class="wa-meta">
+              <b>Flowzen Cloud</b>
+              <span>онлайн</span>
+            </span>
+            <span class="wa-icons">📹 📞</span>
+          </div>
+          <div class="wa-body" id="chat">
+            <div class="wa-day">СЕГОДНЯ</div>
+            <div class="msg bot" data-step="1">Здравствуйте! 👋 Я менеджер Flowzen. Чем могу помочь?<span class="t">9:41</span></div>
+            <div class="msg me" data-step="2">Привет! Хочу узнать про доставку<span class="t">9:41 <span class="tick">✓✓</span></span></div>
+            <div class="msg bot" data-step="3">Конечно 🚚 Доставляем по всему городу за 1–2 часа. Куда привезти?<span class="t">9:41</span></div>
+            <div class="msg me" data-step="4">А можно сначала каталог?<span class="t">9:42 <span class="tick">✓✓</span></span></div>
+            <div class="msg bot" data-step="5">Да, держите 👇
+              <div class="cat-card">
+                <span class="cat-ic">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16M4 12h16M4 19h10" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
+                </span>
+                <span><b>Каталог 2024</b><span>PDF · 24 позиции</span></span>
+              </div>
+              <span class="t">9:42</span>
+            </div>
+            <div class="msg me" data-step="6">Беру 2 шт, оформляйте 🙌<span class="t">9:43 <span class="tick">✓✓</span></span></div>
+            <div class="typing" data-step="7"><i></i><i></i><i></i></div>
+            <div class="msg bot" data-step="8">Заказ принят ✅ Уже передал менеджеру — он свяжется для подтверждения. Спасибо! 💚<span class="t">9:43</span></div>
+          </div>
+          <div class="wa-input">
+            <span class="wa-field">😊 Сообщение</span>
+            <span class="wa-send">
+              <svg viewBox="0 0 24 24" fill="#fff"><path d="M3 3l18 9-18 9 4-9-4-9Z"/></svg>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ================= PROBLEM ================= -->
+<section class="block wrap">
+  <div class="sec-head reveal">
+    <span class="eyebrow"><span class="dot"></span>Знакомо?</span>
+    <h2>Каждое непрочитанное сообщение — это потерянный клиент</h2>
+    <p class="lead">Пока вы заняты, спите или отдыхаете — клиенты ждут. А ждать сегодня никто не любит.</p>
+  </div>
+  <div class="prob-grid stagger">
+    <div class="prob-card" style="--i:0"><span class="prob-emo">🌙</span><p>Клиент пишет ночью — и не получает ответа до утра</p></div>
+    <div class="prob-card" style="--i:1"><span class="prob-emo">🏃</span><p>Пока вы заняты, клиент уходит к конкуренту</p></div>
+    <div class="prob-card" style="--i:2"><span class="prob-emo">🔁</span><p>Одни и те же вопросы съедают всё время менеджера</p></div>
+    <div class="prob-card" style="--i:3"><span class="prob-emo">📉</span><p>Заявки теряются в потоке чатов и переписок</p></div>
+  </div>
+  <div class="prob-note reveal">
+    <span class="pn-ic">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="3.4" stroke="#fff" stroke-width="2"/></svg>
+    </span>
+    Flowzen Cloud решает это — отвечает мгновенно, в любое время, без выходных.
+  </div>
+</section>
+
+<!-- ================= WHAT BOT DOES ================= -->
+<section class="block wrap">
+  <div class="sec-head reveal">
+    <span class="eyebrow"><span class="dot"></span>Что умеет бот</span>
+    <h2>Общается с клиентами как живой менеджер</h2>
+    <p class="lead">Клиент даже не замечает, что отвечает бот. Естественно, по делу и в вашем стиле.</p>
+  </div>
+  <div class="feat-list stagger">
+    <div class="feat" style="--i:0">
+      <span class="feat-ic">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M21 12a8 8 0 0 1-11.6 7.1L3 21l1.9-6.4A8 8 0 1 1 21 12Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9.5 9.5a2.5 2.5 0 0 1 4.6 1.3c0 1.7-2.6 2-2.6 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M11.5 16.2h.01" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+      </span>
+      <span class="feat-tx"><b>Отвечает на вопросы</b><span>Быстро и точно — о товарах, ценах и условиях</span></span>
+      <span class="feat-no">01</span>
+    </div>
+    <div class="feat" style="--i:1">
+      <span class="feat-ic">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16v12H4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M4 8l8 5 8-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span class="feat-tx"><b>Отправляет информацию</b><span>Прайс, адрес, время работы, реквизиты</span></span>
+      <span class="feat-no">02</span>
+    </div>
+    <div class="feat" style="--i:2">
+      <span class="feat-ic">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v5H4zM13 14h7v5h-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      </span>
+      <span class="feat-tx"><b>Показывает каталог</b><span>Товары, фото и описания прямо в чате</span></span>
+      <span class="feat-no">03</span>
+    </div>
+    <div class="feat" style="--i:3">
+      <span class="feat-ic">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 4h2.2l2.2 11.2a1.5 1.5 0 0 0 1.5 1.2h8.4a1.5 1.5 0 0 0 1.5-1.1L21 7H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.5" cy="20" r="1.6" fill="currentColor"/><circle cx="17" cy="20" r="1.6" fill="currentColor"/></svg>
+      </span>
+      <span class="feat-tx"><b>Принимает заказы</b><span>Оформляет заявку и не теряет ни одной</span></span>
+      <span class="feat-no">04</span>
+    </div>
+    <div class="feat" style="--i:4">
+      <span class="feat-ic">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M15.5 8.5l-2 5-5 2 2-5 5-2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      </span>
+      <span class="feat-tx"><b>Направляет клиента</b><span>Подсказывает шаги и ведёт к покупке</span></span>
+      <span class="feat-no">05</span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= BENEFITS ================= -->
+<section class="block wrap">
+  <div class="sec-head reveal">
+    <span class="eyebrow"><span class="dot"></span>Преимущества</span>
+    <h2>Почему бизнес выбирает Flowzen Cloud</h2>
+  </div>
+  <div class="ben-grid stagger">
+    <div class="ben" style="--i:0">
+      <div class="ben-ic"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <h3>Работает 24/7</h3>
+      <p>Бот на связи круглосуточно — ночью, в выходные и праздники. Ваш бизнес не спит и не делает перерывов.</p>
+    </div>
+    <div class="ben" style="--i:1">
+      <div class="ben-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></div>
+      <h3>Мгновенные ответы</h3>
+      <p>Клиент получает ответ за секунды — пока интерес ещё горячий.</p>
+    </div>
+    <div class="ben" style="--i:2">
+      <div class="ben-ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.05 4.91A9.82 9.82 0 0 0 12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.86 9.86 0 0 0 4.79 1.22c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.91-7.02ZM12.05 20.1a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.37c0-4.54 3.7-8.23 8.24-8.23a8.2 8.2 0 0 1 8.23 8.24c0 4.54-3.69 8.22-8.23 8.22Z"/></svg></div>
+      <h3>Полная интеграция</h3>
+      <p>Работает прямо в WhatsApp.</p>
+    </div>
+    <div class="ben" style="--i:3">
+      <div class="ben-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M5 7h14M5 12h14M5 17h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="7" r="2.4" fill="#0c7c3c" stroke="currentColor" stroke-width="2"/><circle cx="15" cy="12" r="2.4" fill="#0c7c3c" stroke="currentColor" stroke-width="2"/><circle cx="8" cy="17" r="2.4" fill="#0c7c3c" stroke="currentColor" stroke-width="2"/></svg></div>
+      <h3>Настройка под вас</h3>
+      <p>Бот говорит вашим голосом и по вашим правилам.</p>
+    </div>
+    <div class="ben" style="--i:4">
+      <div class="ben-ic"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2.5" stroke="currentColor" stroke-width="2"/><path d="M3 9h18M8 4v5" stroke="currentColor" stroke-width="2"/></svg></div>
+      <h3>Удобная панель</h3>
+      <p>Управляйте ботом и заказами сами — всё под контролем.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= HOW IT WORKS ================= -->
+<section class="block wrap" id="how">
+  <div class="steps-wrap reveal">
+    <span class="eyebrow"><span class="dot"></span>Как это работает</span>
+    <h2>Вы рассказываете о бизнесе —<br>остальное делаем мы</h2>
+    <p class="lead">Никаких сложных настроек. Запуск занимает считанные дни.</p>
+    <div class="steps stagger">
+      <div class="step" style="--i:0">
+        <span class="step-no">1</span>
+        <div><b>Рассказываете о бизнесе</b><p>Делитесь информацией о товарах, услугах и о том, как вы общаетесь с клиентами.</p></div>
+      </div>
+      <div class="step" style="--i:1">
+        <span class="step-no">2</span>
+        <div><b>Мы создаём структуру</b><p>Настраиваем бота, сценарии общения и подключаем его к вашему WhatsApp.</p></div>
+      </div>
+      <div class="step" style="--i:2">
+        <span class="step-no">3</span>
+        <div><b>Бот начинает работать</b><p>Отвечает клиентам, принимает заказы и работает на вас 24/7.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TRAIN ================= -->
+<section class="block wrap">
+  <div class="train reveal">
+    <div class="train-grid">
+      <div>
+        <span class="eyebrow"><span class="dot"></span>Обучение бота</span>
+        <h2>Бот говорит вашим голосом</h2>
+        <p class="lead">Вы можете полностью обучить бота: вашему стилю, формату общения и тому, как именно отвечать клиентам. В результате клиенты уверены, что переписываются с живым человеком.</p>
+      </div>
+      <div class="chips stagger">
+        <span class="chip" style="--i:0"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#0c7c3c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Ваш стиль</span>
+        <span class="chip" style="--i:1"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#0c7c3c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Тон общения</span>
+        <span class="chip" style="--i:2"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#0c7c3c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Формат ответов</span>
+        <span class="chip" style="--i:3"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#0c7c3c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Сценарии продаж</span>
+        <span class="chip" style="--i:4"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#0c7c3c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Правила и ограничения</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FINAL CTA ================= -->
+<section class="block wrap">
+  <div class="final reveal">
+    <span class="eyebrow" style="background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.3);color:#fff"><span class="dot"></span>Flowzen Cloud</span>
+    <h2>Пусть WhatsApp работает на вас</h2>
+    <p>Подключите умного AI-менеджера и дайте клиентам мгновенные ответы — днём и ночью.</p>
+    <a class="btn btn-wa wa-link" href="https://wa.me/77753564962">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.05 4.91A9.82 9.82 0 0 0 12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.86 9.86 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.91-7.02ZM12.05 20.1a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.37c0-4.54 3.7-8.23 8.24-8.23a8.2 8.2 0 0 1 8.23 8.24c0 4.54-3.69 8.22-8.23 8.22Zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.51.11-.11.25-.29.37-.43.13-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.42l-.48-.01a.92.92 0 0 0-.66.31c-.23.25-.87.85-.87 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.1-.22-.16-.47-.28Z"/></svg>
+      Написать в WhatsApp
+    </a>
+    <p class="micro">Ответим, расскажем детали и поможем с запуском</p>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer class="foot wrap">
+  <div class="logo">
+    <span class="logo-mark">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M3 12c0-4.97 4.03-9 9-9 4.97 0 9 4.03 9 9 0 4.97-4.03 9-9 9-1.6 0-3.1-.42-4.4-1.15L3 21l1.2-4.5A8.9 8.9 0 0 1 3 12Z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M8.5 12.5l2.3 2.3 4.7-5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+    Flowzen Cloud
+  </div>
+  <p>Умный WhatsApp-менеджер для вашего бизнеса · 2026</p>
+</footer>
+
+<!-- ================= FAB ================= -->
+<a class="fab wa-link" id="fab" href="https://wa.me/77753564962" aria-label="Написать в WhatsApp">
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.05 4.91A9.82 9.82 0 0 0 12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.86 9.86 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.91-7.02ZM12.05 20.1a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.37c0-4.54 3.7-8.23 8.24-8.23a8.2 8.2 0 0 1 8.23 8.24c0 4.54-3.69 8.22-8.23 8.22Zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.51.11-.11.25-.29.37-.43.13-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.42l-.48-.01a.92.92 0 0 0-.66.31c-.23.25-.87.85-.87 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.1-.22-.16-.47-.28Z"/></svg>
+</a>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ===== НОМЕР WHATSAPP — замените на свой (только цифры, с кодом страны) ===== */
+  var PHONE = "77753564962";
+  var MSG   = "Здравствуйте! Хочу подключить Flowzen Cloud для своего бизнеса.";
+
+  /* собрать корректную ссылку для всех кнопок */
+  try{
+    var href = "https://wa.me/" + PHONE + "?text=" + encodeURIComponent(MSG);
+    var links = document.querySelectorAll(".wa-link");
+    for(var i=0;i<links.length;i++){ links[i].setAttribute("href", href); }
+  }catch(e){}
+
+  /* sticky-навигация + плавающая кнопка */
+  var nav = document.getElementById("nav");
+  var fab = document.getElementById("fab");
+  function onScroll(){
+    var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+    if(nav) nav.classList.toggle("scrolled", y > 12);
+    if(fab) fab.classList.toggle("on", y > 520);
+  }
+  window.addEventListener("scroll", onScroll, {passive:true});
+  onScroll();
+
+  /* плавная прокрутка по якорю */
+  var how = document.querySelector('a[href="#how"]');
+  if(how){
+    how.addEventListener("click", function(ev){
+      var t = document.getElementById("how");
+      if(t){ ev.preventDefault(); t.scrollIntoView({behavior:"smooth", block:"start"}); }
+    });
+  }
+
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* появление блоков при скролле */
+  var revealEls = document.querySelectorAll(".reveal, .stagger");
+  if("IntersectionObserver" in window && !reduce){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){ en.target.classList.add("in"); io.unobserve(en.target); }
+      });
+    }, {threshold:0.12, rootMargin:"0px 0px -8% 0px"});
+    for(var r=0;r<revealEls.length;r++){ io.observe(revealEls[r]); }
+  }else{
+    for(var k=0;k<revealEls.length;k++){ revealEls[k].classList.add("in"); }
+  }
+
+  /* анимация чата в телефоне */
+  var chat = document.getElementById("chat");
+  if(chat){
+    var items = chat.querySelectorAll("[data-step]");
+    if(reduce || !("IntersectionObserver" in window)){
+      for(var s=0;s<items.length;s++){ items[s].classList.add("show"); }
+      chat.scrollTop = chat.scrollHeight;
+    }else{
+      document.body.classList.add("js");
+      var typingEl = chat.querySelector(".typing");
+      var played = false;
+      function playChat(){
+        if(played) return; played = true;
+        var d = 350;
+        items.forEach(function(el,idx){
+          var isTyping = el.classList.contains("typing");
+          var isLast = idx === items.length - 1;
+          setTimeout(function(){
+            if(isLast && typingEl){ typingEl.style.display = "none"; }
+            el.classList.add("show");
+            chat.scrollTop = chat.scrollHeight;
+            requestAnimationFrame(function(){ chat.scrollTop = chat.scrollHeight; });
+          }, d);
+          d += isTyping ? 1000 : 800;
+        });
+      }
+      var io2 = new IntersectionObserver(function(entries){
+        entries.forEach(function(en){
+          if(en.isIntersecting){ playChat(); io2.disconnect(); }
+        });
+      }, {threshold:0.25});
+      io2.observe(chat);
+      /* запасной запуск, если наблюдатель не сработал */
+      setTimeout(playChat, 2600);
+    }
+  }
+})();
+</script>
+</body>
+</html>
